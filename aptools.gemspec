@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "aptools.gemspec",
     "bin/installexp",
     "lib/apinstallexp.rb",
     "test/helper.rb",
