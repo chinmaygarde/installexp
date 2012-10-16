@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+def FindPackageName
+    check_aapt = `which aapt`
+    if check_aapt.length == 0
+        puts "Could not find aapt in your path"
+        return ""
+    end
+
+    apks = Dir['**/*.apk']
+    if(apks.length == 0)
+        puts "No APK file found"
+        return ""
+    end
+
+    info = `aapt dump badging #{apks[0]}`
+
+    matchdata = info.match("package: name='?(.+)' versionCode='.+' versionName='.+'")
+    package_name = matchdata[1]
+
+    if package_name.length == 0 
+        puts "Could not figure out package name"
+        return ""
+    end
+    return package_name
+end
+
+def InstallAPK(package_name)
+    obb = Dir['**/*.obb']
+    if(obb.length == 0)
+        puts "Could not find the stupid obb file"
+        return false
+    end
+
+    obb_file = obb[0]
+    apk_file = Dir['**/*.apk'][0]
+
+    puts "Deleting application if present"
+    `adb uninstall #{package_name}`
+    puts "Pushing expansion file"
+    `adb push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}`
+    puts "Installing application"
+    `adb install #{apk_file}`
+    return true
+end
+
+def InstallPack(file)
+    unzip_location = "/tmp/#{file}_unzip"
+    if File.exists?(unzip_location)
+        FileUtils.rm_rf(unzip_location)
+    end
+    `unzip #{file} -d #{unzip_location}`
+    if(!File.exists?(unzip_location))
+        puts "Could not unzip the damn file"
+        return
+    end
+
+    FileUtils.cd(unzip_location) do
+        package_name = FindPackageName()
+        if package_name.length == 0
+            return
+        end
+        success = InstallAPK(package_name)
+        if success
+            puts "Successfully installed application"
+        else
+            puts "Something went wrong"
+        end
+    end
+    puts "Cleaning up"
+    FileUtils.rm_rf(unzip_location)
+end
+
+if ARGV.length != 1
+    puts "Invalid File"
+else
+    file = ARGV[0]
+    if File.exists?(file)
+        InstallPack(file)
+    else
+        puts "Specified file does not exist"
+    end
+end
