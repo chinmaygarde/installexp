@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "aptools"
-  s.version = "1.0.0"
+  s.version = "1.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Chinmay Garde"]
-  s.date = "2012-10-16"
+  s.date = "2012-12-15"
   s.description = "Assorted tools for Apportable Platform"
   s.email = "chinmay@apportable.com"
   s.executables = ["installexp"]
