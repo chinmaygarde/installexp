@@ -1,8 +1,14 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 
-def FindPackageName
-    check_aapt = `which aapt`
+def ExecuteCommand(command, debug)
+    result = `#{command}`
+    puts result if debug
+    return result
+end
+
+def FindPackageName(debug)
+    check_aapt = ExecuteCommand("which aapt", debug)
     if check_aapt.length == 0
         puts "Could not find aapt in your path"
         return ""
@@ -14,7 +20,7 @@ def FindPackageName
         return ""
     end
 
-    info = `aapt dump badging #{apks[0]}`
+    info = ExecuteCommand("aapt dump badging #{apks[0]}", debug)
 
     matchdata = info.match("package: name='?(.+)' versionCode='.+' versionName='.+'")
     package_name = matchdata[1]
@@ -26,7 +32,7 @@ def FindPackageName
     return package_name
 end
 
-def InstallAPK(package_name)
+def InstallAPK(package_name, debug)
     obb = Dir['**/*.obb']
     if(obb.length == 0)
         puts "Could not find the stupid obb file"
@@ -37,31 +43,31 @@ def InstallAPK(package_name)
     apk_file = Dir['**/*.apk'][0]
 
     puts "Deleting application if present"
-    `adb uninstall #{package_name}`
+    ExecuteCommand("adb uninstall #{package_name}", debug)
     puts "Pushing expansion file"
-    `adb push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}`
+    ExecuteCommand("adb push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}", debug)
     puts "Installing application"
-    `adb install #{apk_file}`
+    ExecuteCommand("adb install #{apk_file}", debug)
     return true
 end
 
-def InstallPack(file)
+def InstallPack(file, debug)
     unzip_location = "/tmp/#{file}_unzip"
     if File.exists?(unzip_location)
         FileUtils.rm_rf(unzip_location)
     end
-    `unzip #{file} -d #{unzip_location}`
+    ExecuteCommand("unzip #{file} -d #{unzip_location}", debug)
     if(!File.exists?(unzip_location))
         puts "Could not unzip the damn file"
         return
     end
 
     FileUtils.cd(unzip_location) do
-        package_name = FindPackageName()
+        package_name = FindPackageName(debug)
         if package_name.length == 0
             return
         end
-        success = InstallAPK(package_name)
+        success = InstallAPK(package_name, debug)
         if success
             puts "Successfully installed application"
         else
@@ -72,12 +78,12 @@ def InstallPack(file)
     FileUtils.rm_rf(unzip_location)
 end
 
-if ARGV.length != 1
+if ARGV.length != 1 && ARGV.length != 2
     puts "Invalid File"
 else
     file = ARGV[0]
     if File.exists?(file)
-        InstallPack(file)
+        InstallPack(file, ARGV[1] == "debug")
     else
         puts "Specified file does not exist"
     end
