@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Chinmay Garde"]
-  s.date = "2012-12-15"
+  s.date = "2013-06-12"
   s.description = "Assorted tools for Apportable Platform"
   s.email = "chinmay@apportable.com"
-  s.executables = ["installexp"]
+  s.executables = ["apaapt", "apadb", "installexp"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
@@ -26,6 +26,8 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "aptools.gemspec",
+    "bin/apaapt",
+    "bin/apadb",
     "bin/installexp",
     "lib/apinstallexp.rb",
     "test/helper.rb",

@@ -1,16 +1,36 @@
 #!/usr/bin/env ruby
+# encoding: utf-8
+
+require 'open3'
 require 'fileutils'
 
+def ExecutablePath (ex)
+    return "#{File.dirname(__FILE__)}/#{ex}"
+end
+
 def ExecuteCommand(command, debug)
-    result = `#{command}`
-    puts result if debug
-    return result
+    stdin, stdout, stderr, wait_thr = Open3.popen3(command)
+
+    res = stdout.read
+
+    if debug
+        puts ">>>>>>>>>>>>>>>>>>>>>>>>>"
+        puts "Command '#{command}'"
+        puts res
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<"
+    end
+    
+    stdin.close
+    stdout.close
+    stderr.close
+
+    return res
 end
 
 def FindPackageName(debug)
-    check_aapt = ExecuteCommand("which aapt", debug)
-    if check_aapt.length == 0
-        puts "Could not find aapt in your path"
+    check_apaapt = ExecuteCommand("which apaapt", debug)
+    if check_apaapt.length == 0
+        puts "Could not find apaapt in your path"
         return ""
     end
 
@@ -20,7 +40,7 @@ def FindPackageName(debug)
         return ""
     end
 
-    info = ExecuteCommand("aapt dump badging #{apks[0]}", debug)
+    info = ExecuteCommand("#{ExecutablePath('apaapt')} dump badging #{apks[0]}", debug)
 
     matchdata = info.match("package: name='?(.+)' versionCode='.+' versionName='.+'")
     package_name = matchdata[1]
@@ -43,11 +63,11 @@ def InstallAPK(package_name, debug)
     apk_file = Dir['**/*.apk'][0]
 
     puts "Deleting application if present"
-    ExecuteCommand("adb uninstall #{package_name}", debug)
+    ExecuteCommand("#{ExecutablePath('apadb')} uninstall #{package_name}", debug)
     puts "Pushing expansion file"
-    ExecuteCommand("adb push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}", debug)
+    ExecuteCommand("#{ExecutablePath('apadb')} push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}", debug)
     puts "Installing application"
-    ExecuteCommand("adb install #{apk_file}", debug)
+    ExecuteCommand("#{ExecutablePath('apadb')} install #{apk_file}", debug)
     return true
 end
 
