@@ -64,8 +64,17 @@ def InstallAPK(package_name, debug)
 
     puts "Deleting application if present"
     ExecuteCommand("#{ExecutablePath('apadb')} uninstall #{package_name}", debug)
+    
+    version_string = ExecuteCommand("#{ExecutablePath('apadb')} shell getprop ro.build.version.release", debug)
+    version = version_string.match("\\d.(\\d)*")[0].to_f
+
+    path_prefix = "/mnt/sdcard/Android/obb"
+    if version >= 4.2
+        path_prefix = "/mnt/shell/emulated/obb"
+    end
+
     puts "Pushing expansion file"
-    ExecuteCommand("#{ExecutablePath('apadb')} push #{obb_file} /mnt/sdcard/Android/obb/#{package_name}/#{File.basename(obb_file)}", debug)
+    ExecuteCommand("#{ExecutablePath('apadb')} push #{obb_file} #{path_prefix}/#{package_name}/#{File.basename(obb_file)}", debug)
     puts "Installing application"
     ExecuteCommand("#{ExecutablePath('apadb')} install #{apk_file}", debug)
     return true
