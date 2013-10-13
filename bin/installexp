@@ -111,9 +111,13 @@ if ARGV.length != 1 && ARGV.length != 2
     puts "Invalid File"
 else
     file = ARGV[0]
-    if File.exists?(file)
-        InstallPack(file, ARGV[1] == "debug")
-    else
-        puts "Specified file does not exist"
+    basename = File.basename file
+    dirname = File.dirname file
+    FileUtils.cd(dirname) do
+        if File.exists?(basename)
+            InstallPack(basename, ARGV[1] == "debug")
+        else
+            puts "Specified file does not exist"
+        end
     end
 end
