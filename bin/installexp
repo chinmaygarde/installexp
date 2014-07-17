@@ -66,10 +66,11 @@ def InstallAPK(package_name, debug)
     ExecuteCommand("#{ExecutablePath('apadb')} uninstall #{package_name}", debug)
     
     version_string = ExecuteCommand("#{ExecutablePath('apadb')} shell getprop ro.build.version.release", debug)
-    version = version_string.match("\\d.(\\d)*")[0].to_f
+
+    version_match = version_string.match("\\d.(\\d)*")
 
     path_prefix = "/mnt/sdcard/Android/obb"
-    if version >= 4.2
+    if version_match == nil || version_match[0].to_f >= 4.2
         path_prefix = "/mnt/shell/emulated/obb"
     end
 
